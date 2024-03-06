@@ -62,6 +62,8 @@ fn test_renew_domain() {
     let (erc20, pricing, starknetid, naming, autorenewal) = deploy_contracts();
     testing::set_block_timestamp(BLOCK_TIMESTAMP());
     let token_id: u128 = 1;
+    // whitelist autorenewal contract in the naming
+    naming.whitelist_renewal_contract(autorenewal.contract_address);
 
     // buy TH0RGAL_DOMAIN for a year
     testing::set_contract_address(ADMIN());
@@ -96,6 +98,8 @@ fn test_batch_renew_domain() {
     testing::set_block_timestamp(BLOCK_TIMESTAMP());
     let token_id1: u128 = 1;
     let token_id2: u128 = 2;
+    // whitelist autorenewal contract in the naming
+    naming.whitelist_renewal_contract(autorenewal.contract_address);
 
     // buy TH0RGAL_DOMAIN for a year
     testing::set_contract_address(ADMIN());
@@ -157,9 +161,9 @@ fn test_renew_fail_not_toggled() {
 #[test]
 #[available_gas(20000000)]
 #[should_panic(
-    expected: ('u256_sub Overflow', 'ENTRYPOINT_FAILED', 'ENTRYPOINT_FAILED', 'ENTRYPOINT_FAILED')
+    expected: ('Caller not whitelisted', 'ENTRYPOINT_FAILED', 'ENTRYPOINT_FAILED')
 )]
-fn test_renew_fail_wrong_allowance() {
+fn test_renew_fail_not_whitelisted() {
     // initialize contracts
     let (erc20, pricing, starknetid, naming, autorenewal) = deploy_contracts();
     let token_id: u128 = 1;
@@ -175,12 +179,11 @@ fn test_renew_fail_wrong_allowance() {
     testing::set_block_timestamp(BLOCK_TIMESTAMP_ADD());
 
     // Toggle renewal for a allowance
-    let lower_price: u256 = 300.into();
-    autorenewal.enable_renewals(TH0RGAL_DOMAIN(), lower_price, 0);
+    autorenewal.enable_renewals(TH0RGAL_DOMAIN(), price, 0);
     erc20.approve(autorenewal.contract_address, integer::BoundedInt::max());
 
     // Should revert because price of renewing domain is higher than limit price
-    autorenewal.renew(TH0RGAL_DOMAIN(), ADMIN(), lower_price, 0, 0);
+    autorenewal.renew(TH0RGAL_DOMAIN(), ADMIN(), price, 0, 0);
 }
 
 #[test]
@@ -212,6 +215,8 @@ fn test_renew_expired_domain() {
     // initialize contracts
     let (erc20, pricing, starknetid, naming, autorenewal) = deploy_contracts();
     let token_id: u128 = 1;
+    // whitelist autorenewal contract in the naming
+    naming.whitelist_renewal_contract(autorenewal.contract_address);
 
     testing::set_block_timestamp(BLOCK_TIMESTAMP());
 
@@ -245,6 +250,8 @@ fn test_renew_domains() {
     let (erc20, pricing, starknetid, naming, autorenewal) = deploy_contracts();
     let token_id: u128 = 1;
     let token_id2: u128 = 2;
+    // whitelist autorenewal contract in the naming
+    naming.whitelist_renewal_contract(autorenewal.contract_address);
 
     testing::set_block_timestamp(BLOCK_TIMESTAMP());
 
@@ -288,6 +295,8 @@ fn test_renew_with_metadata() {
     let metadata = 222222;
     let tax_price: u256 = 100;
     testing::set_block_timestamp(BLOCK_TIMESTAMP());
+    // whitelist autorenewal contract in the naming
+    naming.whitelist_renewal_contract(autorenewal.contract_address);
 
     // buy TH0RGAL_DOMAIN & OTHER_DOMAIN
     testing::set_contract_address(ADMIN());
@@ -330,6 +339,8 @@ fn test_renew_with_updated_whitelisted_renewer() {
     let (erc20, pricing, starknetid, naming, autorenewal) = deploy_contracts();
     testing::set_block_timestamp(BLOCK_TIMESTAMP());
     let token_id: u128 = 1;
+    // whitelist autorenewal contract in the naming
+    naming.whitelist_renewal_contract(autorenewal.contract_address);
 
     // buy TH0RGAL_DOMAIN for a year
     testing::set_contract_address(ADMIN());
