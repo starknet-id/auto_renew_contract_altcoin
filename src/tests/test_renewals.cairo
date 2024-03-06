@@ -160,34 +160,6 @@ fn test_renew_fail_not_toggled() {
 
 #[test]
 #[available_gas(20000000)]
-#[should_panic(
-    expected: ('Caller not whitelisted', 'ENTRYPOINT_FAILED', 'ENTRYPOINT_FAILED')
-)]
-fn test_renew_fail_not_whitelisted() {
-    // initialize contracts
-    let (erc20, pricing, starknetid, naming, autorenewal) = deploy_contracts();
-    let token_id: u128 = 1;
-    testing::set_block_timestamp(BLOCK_TIMESTAMP());
-
-    // buy TH0RGAL_DOMAIN for a year
-    testing::set_contract_address(ADMIN());
-    let (_, price) = pricing.compute_buy_price(7, 365);
-    erc20.approve(naming.contract_address, price);
-    starknetid.mint(token_id);
-    naming.buy(token_id, TH0RGAL_DOMAIN(), 365_u16, ZERO(), ZERO(), 0, 0);
-
-    testing::set_block_timestamp(BLOCK_TIMESTAMP_ADD());
-
-    // Toggle renewal for a allowance
-    autorenewal.enable_renewals(TH0RGAL_DOMAIN(), price, 0);
-    erc20.approve(autorenewal.contract_address, integer::BoundedInt::max());
-
-    // Should revert because price of renewing domain is higher than limit price
-    autorenewal.renew(TH0RGAL_DOMAIN(), ADMIN(), price, 0, 0);
-}
-
-#[test]
-#[available_gas(20000000)]
 #[should_panic(expected: ('Domain already renewed', 'ENTRYPOINT_FAILED',))]
 fn test_renew_fail_expiry() {
     // initialize contracts
@@ -458,5 +430,33 @@ fn test_renew_disabled_contract_fails() {
 
     autorenewal.toggle_off();
 
+    autorenewal.renew(TH0RGAL_DOMAIN(), ADMIN(), price, 0, 0);
+}
+
+#[test]
+#[available_gas(20000000)]
+#[should_panic(
+    expected: ('Caller not whitelisted', 'ENTRYPOINT_FAILED', 'ENTRYPOINT_FAILED')
+)]
+fn test_renew_fail_not_whitelisted() {
+    // initialize contracts
+    let (erc20, pricing, starknetid, naming, autorenewal) = deploy_contracts();
+    let token_id: u128 = 1;
+    testing::set_block_timestamp(BLOCK_TIMESTAMP());
+
+    // buy TH0RGAL_DOMAIN for a year
+    testing::set_contract_address(ADMIN());
+    let (_, price) = pricing.compute_buy_price(7, 365);
+    erc20.approve(naming.contract_address, price);
+    starknetid.mint(token_id);
+    naming.buy(token_id, TH0RGAL_DOMAIN(), 365_u16, ZERO(), ZERO(), 0, 0);
+
+    testing::set_block_timestamp(BLOCK_TIMESTAMP_ADD());
+
+    // Toggle renewal for a allowance
+    autorenewal.enable_renewals(TH0RGAL_DOMAIN(), price, 0);
+    erc20.approve(autorenewal.contract_address, integer::BoundedInt::max());
+
+    // Should revert because price of renewing domain is higher than limit price
     autorenewal.renew(TH0RGAL_DOMAIN(), ADMIN(), price, 0, 0);
 }
