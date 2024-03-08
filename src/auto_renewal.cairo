@@ -388,7 +388,7 @@ mod AutoRenewal {
             // if something remains after this, it can be considered as lost by the user,
             // we keep the ability to claim it back but can't guarantee we will do it
             INamingDispatcher { contract_address: naming }
-                .renew(root_domain, 365_u16, ContractAddressZeroable::zero(), 0, metadata);
+                .auto_renew_altcoin(root_domain, 365_u16, ContractAddressZeroable::zero(), 0, metadata, erc20, domain_price);
         }
     }
 }
